@@ -187,6 +187,10 @@ func (self *App) Run(args []string) {
         return
     }
 
-    c.ShowUsageWithMessage("The command you tried to run failed. Make sure you typed it correctly.")
-    os.Exit(1)
+    if len(args) > 1 {
+        c.ShowUsageWithMessage("The command you tried to run failed. Make sure you typed it correctly.")
+        os.Exit(1)
+    }
+
+    c.ShowUsage()
 }
