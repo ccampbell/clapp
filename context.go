@@ -79,6 +79,9 @@ func (self *Context) PrintUsage() {
 
 func (self *Context) ShowUsage() {
     self.PrintIntro()
+    if self.App.Description != "" {
+        self.Print(self.App.Description)
+    }
     self.PrintUsage()
 }
 

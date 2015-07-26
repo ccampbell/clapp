@@ -9,6 +9,7 @@ import(
 
 type App struct {
     Name string
+    Description string
     Version string
     Intro string
     Usage string
