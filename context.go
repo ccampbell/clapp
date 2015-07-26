@@ -2,7 +2,7 @@ package clapp
 
 import(
     "fmt"
-    "github.com/fatih/color"
+    "github.com/mgutz/ansi"
     "os"
     "strings"
 )
@@ -47,7 +47,7 @@ func (self *Context) PrintUsage() {
         return
     }
 
-    boldUnderline := color.New(color.Bold, color.Underline).SprintFunc()
+    boldUnderline := ansi.ColorFunc("white+bu")
     self.Print("\n%s", boldUnderline("COMMANDS"))
 
     maxLength1 := getMaxLength(self.App.Commands)
@@ -84,7 +84,7 @@ func (self *Context) ShowUsage() {
 
 func (self *Context) ShowUsageWithMessage(m string) {
     self.PrintIntro()
-    error := color.New(color.FgRed, color.Bold).SprintFunc()
+    error := ansi.ColorFunc("88")
     self.Print("\n%s", error(m))
     self.PrintUsage()
 }
@@ -124,13 +124,13 @@ func (self *Context) PrintInline(messages...interface{}) {
 }
 
 func (self *Context) Fail(msg string) {
-    error := color.New(color.FgRed, color.Bold).SprintFunc()
+    error := ansi.ColorFunc("88")
     self.Print("%s", error(msg))
     os.Exit(1)
 }
 
 func (self *Context) FailWithCode(msg string, code int) {
-    error := color.New(color.FgRed, color.Bold).SprintFunc()
+    error := ansi.ColorFunc("88")
     self.Print("%s", error(msg))
     os.Exit(code)
 }
