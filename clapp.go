@@ -3,6 +3,7 @@ package clapp
 import(
     "errors"
     "os"
+    "regexp"
     "strings"
 )
 
@@ -89,6 +90,16 @@ func handlerMatches(pattern string, args []string) (map[string]string, bool) {
         if strings.HasPrefix(word, "[") && strings.HasSuffix(word, "]") {
             matches[strings.TrimRight(strings.TrimLeft(word, "["), "]")] = arg
             continue
+        }
+
+        if strings.Contains(word, ":") {
+            bits := strings.Split(word, ":")
+            re, err := regexp.Compile(bits[1])
+
+            if err == nil && re.MatchString(arg) {
+                matches[bits[0]] = arg
+                continue
+            }
         }
 
         if word != arg {
