@@ -10,6 +10,7 @@ type App struct {
     Version string
     Intro string
     Usage string
+    HandlerKeys []string
     Handlers map[string]func(*Context)
     CommandKeys []string
     Commands map[string]string
@@ -101,11 +102,11 @@ func handlerMatches(pattern string, args []string) (map[string]string, bool) {
 func findMatchingHandler(a *App, args []string, c *Context) (func(*Context), error) {
     var f func(*Context)
 
-    for k, v := range a.Handlers {
+    for _, k := range a.HandlerKeys {
         matches, ok := handlerMatches(k, args)
         if ok {
             c.Args = matches
-            return v, nil
+            return a.Handlers[k], nil
         }
     }
 
@@ -113,6 +114,7 @@ func findMatchingHandler(a *App, args []string, c *Context) (func(*Context), err
 }
 
 func (self *App) HandleFunc(pattern string, handler func(*Context), desc...string) {
+    self.HandlerKeys = append(self.HandlerKeys, pattern)
     self.Handlers[pattern] = handler
 
     if len(desc) == 1 {
