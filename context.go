@@ -34,21 +34,21 @@ func getMaxLength(m map[string]string) int {
 
 func (self *Context) PrintIntro() {
     if self.App.Intro != "" {
-        fmt.Println(self.App.Intro)
+        self.Print(self.App.Intro)
         return
     }
 
-    fmt.Println(self.App.Name + " v" + self.App.Version)
+    self.Print("%s v%s", self.App.Name, self.App.Version)
 }
 
 func (self *Context) PrintUsage() {
     if self.App.Usage != "" {
-        fmt.Println(self.App.Usage)
+        self.Print(self.App.Usage)
         return
     }
 
-    c := color.New(color.Bold, color.Underline)
-    c.Println("\nCOMMANDS")
+    boldUnderline := color.New(color.Bold, color.Underline).SprintFunc()
+    self.Print("\n%s", boldUnderline("COMMANDS"))
 
     maxLength1 := getMaxLength(self.App.Commands)
     maxLength2 := getMaxLength(self.App.Flags) + 2
@@ -59,11 +59,11 @@ func (self *Context) PrintUsage() {
 
     for _, k := range self.App.CommandKeys {
         command := padRight(k, " ", maxLength + 10)
-        fmt.Println(command + self.App.Commands[k])
+        self.Print(command + self.App.Commands[k])
     }
 
     if len(self.App.FlagKeys) > 0 {
-        c.Println("\nFLAGS")
+        self.Print("\n%s", boldUnderline("FLAGS"))
         for _, k := range self.App.FlagKeys {
             flag := padRight("--" + k, " ", maxLength + 10)
             desc := self.App.Flags[k]
@@ -72,7 +72,7 @@ func (self *Context) PrintUsage() {
                 desc += " (default: " + self.App.FlagDefaults[k] + ")"
             }
 
-            fmt.Println(flag + desc)
+            self.Print(flag + desc)
         }
     }
 }
@@ -83,18 +83,48 @@ func (self *Context) ShowUsage() {
 }
 
 func (self *Context) ShowVersion() {
-    fmt.Println(self.App.Version)
+    self.Print(self.App.Version)
+}
+
+func output(forceLineBreak bool, messages...interface{}) {
+    if len(messages) == 0 {
+        return
+    }
+
+    first := messages[0].(string)
+
+    if forceLineBreak {
+        first += "\n"
+    }
+
+    rest := make([]interface{}, 0)
+
+    if len(messages) > 1 {
+        rest = messages[1:len(messages)]
+    }
+
+    fmt.Printf(first, rest...)
+}
+
+func (self *Context) Print(messages...interface{}) {
+    forceLineBreak := true
+    output(forceLineBreak, messages...)
+}
+
+func (self *Context) PrintInline(messages...interface{}) {
+    forceLineBreak := false
+    output(forceLineBreak, messages...)
 }
 
 func (self *Context) Fail(msg string) {
     error := color.New(color.FgRed, color.Bold).SprintFunc()
-    fmt.Printf("%s\n", error(msg))
+    self.Print("%s", error(msg))
     os.Exit(1)
 }
 
 func (self *Context) FailWithCode(msg string, code int) {
     error := color.New(color.FgRed, color.Bold).SprintFunc()
-    fmt.Printf("%s\n", error(msg))
+    self.Print("%s", error(msg))
     os.Exit(code)
 }
 
