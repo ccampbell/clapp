@@ -58,14 +58,14 @@ func (self *Context) PrintUsage() {
     }
 
     for _, k := range self.App.CommandKeys {
-        command := padRight(k, " ", maxLength + 10)
+        command := padRight(k, " ", maxLength + 3)
         self.Print(command + self.App.Commands[k])
     }
 
     if len(self.App.FlagKeys) > 0 {
         self.Print("\n%s", boldUnderline("FLAGS"))
         for _, k := range self.App.FlagKeys {
-            flag := padRight("--" + k, " ", maxLength + 10)
+            flag := padRight("--" + k, " ", maxLength + 3)
             desc := self.App.Flags[k]
 
             if self.App.FlagDefaults[k] != "" {
