@@ -82,6 +82,13 @@ func (self *Context) ShowUsage() {
     self.PrintUsage()
 }
 
+func (self *Context) ShowUsageWithMessage(m string) {
+    self.PrintIntro()
+    error := color.New(color.FgRed, color.Bold).SprintFunc()
+    self.Print("\n%s", error(m))
+    self.PrintUsage()
+}
+
 func (self *Context) ShowVersion() {
     self.Print(self.App.Version)
 }

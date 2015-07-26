@@ -172,6 +172,6 @@ func (self *App) Run(args []string) {
         return
     }
 
-    c.ShowUsage()
+    c.ShowUsageWithMessage("The command you tried to run could not be found")
     os.Exit(1)
 }
