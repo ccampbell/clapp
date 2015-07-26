@@ -131,8 +131,10 @@ func (self *App) DefineFlag(flag...string) {
 
     flagName := stripDashes(flag[0])
 
-    self.FlagKeys = append(self.FlagKeys, flagName)
-    self.Flags[flagName] = flag[1]
+    if flag[1] != "" {
+        self.FlagKeys = append(self.FlagKeys, flagName)
+        self.Flags[flagName] = flag[1]
+    }
 
     if len(flag) > 2 {
         self.FlagDefaults[flagName] = flag[2]
