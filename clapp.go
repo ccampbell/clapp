@@ -125,13 +125,28 @@ func findMatchingHandler(a *App, args []string, c *Context) (func(*Context), err
     return f, errors.New("Unable to find matching handler")
 }
 
+func prettyPattern(p string) string {
+    finalWords := make([]string, 0)
+    words := strings.Split(p, " ")
+
+    for _, v := range words {
+        finalWord := v
+        if strings.Contains(v, ":") {
+            finalWord = "{" + strings.Split(v, ":")[0] + "}"
+        }
+        finalWords = append(finalWords, finalWord)
+    }
+
+    return strings.Join(finalWords, " ")
+}
+
 func (self *App) HandleFunc(pattern string, handler func(*Context), desc...string) {
     self.HandlerKeys = append(self.HandlerKeys, pattern)
     self.Handlers[pattern] = handler
 
     if len(desc) == 1 {
-        self.CommandKeys = append(self.CommandKeys, pattern)
-        self.Commands[pattern] = desc[0]
+        self.CommandKeys = append(self.CommandKeys, prettyPattern(pattern))
+        self.Commands[prettyPattern(pattern)] = desc[0]
     }
 }
 
