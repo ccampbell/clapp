@@ -5,10 +5,12 @@ import(
     "github.com/mgutz/ansi"
     "os"
     "strings"
+    "time"
 )
 
 type Context struct {
     App *App
+    spinChannel chan bool
     Flags map[string]string
     Args map[string]string
 }
@@ -75,6 +77,35 @@ func (self *Context) PrintUsage() {
             self.Print(flag + desc)
         }
     }
+}
+
+func (self *Context) StartSpinner(text...string) {
+    self.spinChannel = make(chan bool)
+    go func() {
+        glyphs := [8]string{"|", "/", "-", "\\", "|", "/", "-", "\\"}
+        for {
+            select {
+                case <- self.spinChannel:
+                    return
+
+                default:
+                    for _, glyph := range glyphs {
+                        msg := fmt.Sprintf("%s", glyph)
+                        if len(text) > 0 {
+                            msg = fmt.Sprintf("%s %s ", text[0], glyph)
+                        }
+                        self.PrintInline(msg)
+                        time.Sleep(150 * time.Millisecond)
+                        self.PrintInline("\r")
+                    }
+            }
+        }
+    } ()
+}
+
+func (self *Context) StopSpinner() {
+    self.spinChannel <- true
+    self.PrintInline("\r")
 }
 
 func (self *Context) ShowUsage() {
