@@ -2,6 +2,7 @@ package clapp
 
 import(
     "errors"
+    "os"
     "strings"
 )
 
@@ -159,4 +160,5 @@ func (self *App) Run(args []string) {
     }
 
     c.ShowUsage()
+    os.Exit(1)
 }
