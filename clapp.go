@@ -189,7 +189,7 @@ func (self *App) Run(args []string) {
     }
 
     if len(args) > 1 {
-        c.ShowUsageWithMessage("The command you tried to run failed. Make sure you typed it correctly.")
+        c.ShowUsageWithMessage("“" + strings.Join(args, " ") + "”" + " is not a valid command. Make sure you typed it correctly.")
         os.Exit(1)
     }
 
