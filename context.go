@@ -104,7 +104,7 @@ func (self *Context) StartSpinner(text...string) {
 }
 
 func (self *Context) StopSpinner() {
-    self.spinChannel <- true
+    close(self.spinChannel)
     self.PrintInline("\r")
 }
 
