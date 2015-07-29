@@ -11,6 +11,8 @@ To install run
 go get github.com/ccampbell/clapp
 ```
 
+Package documentation is available here: https://godoc.org/github.com/ccampbell/clapp
+
 ## Example
 
 This is a sample application to demonstrate some of the functionality
