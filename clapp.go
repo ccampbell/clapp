@@ -170,7 +170,19 @@ func (self *App) DefineFlag(flag...string) {
 
 func (self *App) Run(args []string) {
     f := ParseFlags(args)
-    c := Context{Flags:f, App:self}
+    p := ProgressBar {
+        Width: 50,
+        EmptyShape: "-",
+        FillShape: "#",
+        FillColor: "white",
+        BackgroundColor: "white",
+    }
+
+    c := Context {
+        Flags: f,
+        App: self,
+        ProgressBar: &p,
+    }
 
     if c.Flag("h") == "1" || c.Flag("help") == "1" {
         c.ShowUsage()

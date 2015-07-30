@@ -5,12 +5,16 @@ import(
     "github.com/mgutz/ansi"
     "os"
     "strings"
+    "sync"
     "time"
 )
 
 type Context struct {
+    Mu sync.RWMutex
     App *App
     spinnerChannel chan bool
+    progressBarChannel chan []string
+    ProgressBar *ProgressBar
     Flags map[string]string
     Args map[string]string
 }
@@ -110,6 +114,35 @@ func (self *Context) StartSpinner(text...string) {
 func (self *Context) StopSpinner() {
     self.spinnerChannel <- true
     close(self.spinnerChannel)
+}
+
+func (self *Context) StartProgress() {
+    self.ProgressBar.Init(self)
+    self.ProgressBar.Render(self)
+}
+
+func (self *Context) SetProgressPercent(percent interface{}) {
+    p := float64(0)
+    switch percent.(type) {
+        case float64:
+            p = percent.(float64)
+            break
+        case float32:
+            p = float64(percent.(float32))
+            break
+        case int:
+            p = float64(percent.(int))
+            break
+    }
+
+    self.ProgressBar.Mu.Lock()
+    self.ProgressBar.CurrentPercent = p
+    self.ProgressBar.Mu.Unlock()
+    self.ProgressBar.Render(self)
+}
+
+func (self *Context) StopProgress() {
+    self.ProgressBar.Stop(self)
 }
 
 func (self *Context) ShowUsage() {
