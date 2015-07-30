@@ -10,7 +10,7 @@ import(
 
 type Context struct {
     App *App
-    spinChannel chan bool
+    spinnerChannel chan bool
     Flags map[string]string
     Args map[string]string
 }
@@ -80,12 +80,12 @@ func (self *Context) PrintUsage() {
 }
 
 func (self *Context) StartSpinner(text...string) {
-    self.spinChannel = make(chan bool)
+    self.spinnerChannel = make(chan bool)
     go func() {
         glyphs := [8]string{"|", "/", "-", "\\", "|", "/", "-", "\\"}
         for {
             select {
-                case <- self.spinChannel:
+                case <- self.spinnerChannel:
                     return
 
                 default:
@@ -104,8 +104,8 @@ func (self *Context) StartSpinner(text...string) {
 }
 
 func (self *Context) StopSpinner() {
-    close(self.spinChannel)
     self.PrintInline("\r")
+    close(self.spinnerChannel)
 }
 
 func (self *Context) ShowUsage() {
