@@ -86,17 +86,21 @@ func (self *Context) StartSpinner(text...string) {
         for {
             select {
                 case <- self.spinnerChannel:
+                    self.PrintInline("\r")
+                    if len(text) > 0 {
+                        self.PrintInline(strings.Repeat(" ", len(text[0]) + 2))
+                    }
+                    self.PrintInline("\r")
                     return
 
                 default:
                     for _, glyph := range glyphs {
                         msg := fmt.Sprintf("%s", glyph)
                         if len(text) > 0 {
-                            msg = fmt.Sprintf("%s %s ", text[0], glyph)
+                            msg = fmt.Sprintf("\r%s %s ", text[0], glyph)
                         }
                         self.PrintInline(msg)
                         time.Sleep(150 * time.Millisecond)
-                        self.PrintInline("\r")
                     }
             }
         }
@@ -104,7 +108,6 @@ func (self *Context) StartSpinner(text...string) {
 }
 
 func (self *Context) StopSpinner() {
-    self.PrintInline("\r")
     self.spinnerChannel <- true
     close(self.spinnerChannel)
 }
