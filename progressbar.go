@@ -17,6 +17,7 @@ type ProgressBar struct {
     FillShape string
     FillColor string
     BackgroundColor string
+    doneChannel chan bool
 }
 
 func (self *ProgressBar) GetLineForPercent(i int, displayPercent float64) string {
@@ -50,10 +51,6 @@ func (self *ProgressBar) GetLinesForPercentRange(start float64, end float64) []s
         i += 1
     }
 
-    if end >= 100 {
-        lines = append(lines, "\n")
-    }
-
     return lines
 }
 
@@ -71,8 +68,9 @@ func (self *ProgressBar) Init(c *Context) {
             select {
                 case lines := <- ch:
                     for _, l := range lines {
-                        if l == "DONE" {
+                        if l == "CANCEL" {
                             c.Print("")
+                            close(ch)
                             return
                         }
 
@@ -85,8 +83,10 @@ func (self *ProgressBar) Init(c *Context) {
                     }
 
                     nextLine := linesToAdd[0]
-                    if nextLine == "\n" {
+                    if nextLine == "DONE" {
                         c.Print("")
+                        close(c.progressBarChannel)
+                        self.doneChannel <- true
                         return
                     }
 
@@ -109,7 +109,15 @@ func (self *ProgressBar) Render(c *Context) {
     self.Mu.Unlock()
 }
 
+func (self *ProgressBar) Cancel(c *Context) {
+    c.progressBarChannel <- []string{ "CANCEL" }
+}
+
 func (self *ProgressBar) Stop(c *Context) {
+    self.Mu.Lock()
+    self.doneChannel = make(chan bool, 1)
+    self.Mu.Unlock()
     c.progressBarChannel <- []string{ "DONE" }
-    close(c.progressBarChannel)
+    <- self.doneChannel
+    close(self.doneChannel)
 }

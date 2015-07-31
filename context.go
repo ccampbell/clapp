@@ -141,6 +141,10 @@ func (self *Context) SetProgressPercent(percent interface{}) {
     self.ProgressBar.Render(self)
 }
 
+func (self *Context) CancelProgress() {
+    self.ProgressBar.Cancel(self)
+}
+
 func (self *Context) StopProgress() {
     self.ProgressBar.Stop(self)
 }
