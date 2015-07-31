@@ -11,6 +11,8 @@ import(
 type ProgressBar struct {
     Mu sync.RWMutex
     Width int
+    Duration time.Duration
+    Type string
     PreviousPercent float64
     CurrentPercent float64
     EmptyShape string
@@ -54,47 +56,67 @@ func (self *ProgressBar) GetLinesForPercentRange(start float64, end float64) []s
     return lines
 }
 
+func easeIn(t float64, b float64, c float64, d float64) float64 {
+    t = t / d
+    return c*t*t + b
+}
+
+func easeOut(t float64, b float64, c float64, d float64) float64 {
+    t = t / d
+    return -c *t*(t-2) + b
+}
+
 func (self *ProgressBar) Init(c *Context) {
     c.Mu.Lock()
     c.progressBarChannel = make(chan []string)
     c.Mu.Unlock()
     go func() {
-        linesToAdd := make([]string, 0)
         previousLine := ""
+        var fn func(float64, float64, float64, float64) float64
+
         for {
             c.Mu.RLock()
             ch := c.progressBarChannel
             c.Mu.RUnlock()
             select {
                 case lines := <- ch:
-                    for _, l := range lines {
+                    for i, l := range lines {
                         if l == "CANCEL" {
                             c.Print("")
                             close(ch)
                             return
                         }
 
-                        linesToAdd = append(linesToAdd, l)
-                    }
-                    break
-                default:
-                    if len(linesToAdd) == 0 {
-                        continue
-                    }
+                        if l == "DONE" {
+                            c.Print("")
+                            close(c.progressBarChannel)
+                            self.doneChannel <- true
+                            return
+                        }
 
-                    nextLine := linesToAdd[0]
-                    if nextLine == "DONE" {
-                        c.Print("")
-                        close(c.progressBarChannel)
-                        self.doneChannel <- true
-                        return
-                    }
+                        c.PrintInline("\r" + strings.Repeat(" ", len(previousLine)))
+                        c.PrintInline("\r" + l)
+                        previousLine = l
 
-                    linesToAdd = linesToAdd[1:]
-                    c.PrintInline("\r" + strings.Repeat(" ", len(previousLine)))
-                    c.PrintInline("\r" + nextLine)
-                    previousLine = nextLine
-                    time.Sleep(50 * time.Millisecond)
+                        // Counterintuitive but since we are using sleep times to do the animations the function should be the opposite
+                        switch self.Type {
+                            case "ease-in":
+                                fn = easeOut
+                                break
+                            case "ease-out":
+                                fn = easeIn
+                                break
+                        }
+
+                        if fn != nil {
+                            dur := fn(float64(i + 1), float64(0), float64(self.Duration), float64(len(lines)))
+                            prevDur := fn(float64(i), float64(0), float64(self.Duration), float64(len(lines)))
+                            time.Sleep(time.Duration(dur) - time.Duration(prevDur))
+                            continue
+                        }
+
+                        time.Sleep(self.Duration / time.Duration(len(lines)))
+                    }
                     break
             }
         }

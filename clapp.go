@@ -5,6 +5,7 @@ import(
     "os"
     "regexp"
     "strings"
+    "time"
 )
 
 type App struct {
@@ -172,6 +173,8 @@ func (self *App) Run(args []string) {
     f := ParseFlags(args)
     p := ProgressBar {
         Width: 50,
+        Duration: 500 * time.Millisecond,
+        Type: "linear",
         EmptyShape: "-",
         FillShape: "#",
         FillColor: "white",
