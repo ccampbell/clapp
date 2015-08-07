@@ -225,5 +225,16 @@ func (self *Context) Flag(name string) string {
 }
 
 func (self *Context) Arg(name string) string {
-    return self.Args[name]
+    val, ok := self.Args[name]
+
+    if !ok && strings.Contains(name, " ") {
+        name = strings.Replace(name, " ", "_", -1)
+        val, ok = self.Args[name]
+    }
+
+    if !ok {
+        return ""
+    }
+
+    return val
 }

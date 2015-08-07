@@ -69,11 +69,21 @@ func New(n string) *App {
     return app
 }
 
+func patternToWords(pattern string) []string {
+    re := regexp.MustCompile("\\[.*?\\]")
+    pattern = string(re.ReplaceAllFunc([]byte(pattern), func(b []byte) []byte {
+        newWord := strings.Replace(string(b), " ", "_", -1)
+        return []byte(newWord)
+    }))
+
+    return strings.Split(pattern, " ")
+}
+
 func handlerMatches(pattern string, args []string) (map[string]string, bool) {
     var matches = make(map[string]string)
     var ok = true
 
-    words := strings.Split(pattern, " ")
+    words := patternToWords(pattern)
     newArgs := make([]string, 0)
     for i, arg := range args {
 
