@@ -160,7 +160,7 @@ func (self *Context) ShowUsage() {
 func (self *Context) ShowUsageWithMessage(m string) {
     self.PrintIntro()
     error := ansi.ColorFunc("88")
-    self.Print("\n%s", error(m))
+    self.PrintError("\n%s", error(m))
     self.PrintUsage()
 }
 
@@ -168,7 +168,7 @@ func (self *Context) ShowVersion() {
     self.Print(self.App.Version)
 }
 
-func output(forceLineBreak bool, messages...interface{}) {
+func output(forceLineBreak bool, stdErr bool, messages...interface{}) {
     if len(messages) == 0 {
         return
     }
@@ -185,28 +185,41 @@ func output(forceLineBreak bool, messages...interface{}) {
         rest = messages[1:len(messages)]
     }
 
+    if stdErr {
+        fmt.Fprintf(os.Stderr, first, rest...)
+        return
+    }
+
     fmt.Printf(first, rest...)
 }
 
 func (self *Context) Print(messages...interface{}) {
     forceLineBreak := true
-    output(forceLineBreak, messages...)
+    stdErr := false
+    output(forceLineBreak, stdErr, messages...)
 }
 
 func (self *Context) PrintInline(messages...interface{}) {
     forceLineBreak := false
-    output(forceLineBreak, messages...)
+    stdErr := false
+    output(forceLineBreak, stdErr, messages...)
+}
+
+func (self *Context) PrintError(messages...interface{}) {
+    forceLineBreak := true
+    stdErr := true
+    output(forceLineBreak, stdErr, messages...)
 }
 
 func (self *Context) Fail(msg string) {
     error := ansi.ColorFunc("88")
-    self.Print("%s", error(msg))
+    self.PrintError("%s", error(msg))
     os.Exit(1)
 }
 
 func (self *Context) FailWithCode(msg string, code int) {
     error := ansi.ColorFunc("88")
-    self.Print("%s", error(msg))
+    self.PrintError("%s", error(msg))
     os.Exit(code)
 }
 
