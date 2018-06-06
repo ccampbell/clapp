@@ -159,7 +159,7 @@ func (self *Context) ShowUsage() {
 
 func (self *Context) ShowUsageWithMessage(m string) {
     self.PrintIntro()
-    error := ansi.ColorFunc("88")
+    error := ansi.ColorFunc("red+h")
     self.PrintError("\n%s", error(m))
     self.PrintUsage()
 }
@@ -212,13 +212,13 @@ func (self *Context) PrintError(messages...interface{}) {
 }
 
 func (self *Context) Fail(msg string) {
-    error := ansi.ColorFunc("88")
+    error := ansi.ColorFunc("red+h")
     self.PrintError("%s", error(msg))
     os.Exit(1)
 }
 
 func (self *Context) FailWithCode(msg string, code int) {
-    error := ansi.ColorFunc("88")
+    error := ansi.ColorFunc("red+h")
     self.PrintError("%s", error(msg))
     os.Exit(code)
 }
