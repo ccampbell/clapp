@@ -4,6 +4,7 @@ import(
     "fmt"
     "github.com/mgutz/ansi"
     "os"
+    "runtime"
     "strings"
     "sync"
     "time"
@@ -17,6 +18,7 @@ type Context struct {
     ProgressBar *ProgressBar
     Flags map[string]string
     Args map[string]string
+    ExitCode int
 }
 
 func padRight(str, pad string, length int) string {
@@ -239,6 +241,13 @@ func (self *Context) PrintError(messages...interface{}) {
     output(forceLineBreak, stdErr, messages...)
 }
 
+func (self *Context) DeferFail(msg string) {
+    error := ansi.ColorFunc("red+h")
+    self.PrintError("%s", error(msg))
+    self.ExitCode = 1
+    runtime.Goexit()
+}
+
 func (self *Context) Fail(msg string) {
     error := ansi.ColorFunc("red+h")
     self.PrintError("%s", error(msg))
@@ -249,6 +258,13 @@ func (self *Context) FailWithCode(msg string, code int) {
     error := ansi.ColorFunc("red+h")
     self.PrintError("%s", error(msg))
     os.Exit(code)
+}
+
+func (self *Context) DeferFailWithCode(msg string, code int) {
+    error := ansi.ColorFunc("red+h")
+    self.PrintError("%s", error(msg))
+    self.ExitCode = code
+    runtime.Goexit()
 }
 
 func (self *Context) Flag(name string) string {
