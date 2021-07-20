@@ -18,7 +18,6 @@ Package documentation is available here: https://godoc.org/github.com/ccampbell/
 This is a sample application to demonstrate some of the functionality
 
 ```go
-
 package main
 
 import(
@@ -72,6 +71,7 @@ func main() {
     // and pass the default value as the third parameter.
     app.DefineFlag("--config", "Path to config file", "config.json")
     app.DefineFlag("--verbose", "Show verbose output")
+    app.AddAlias("-v", "--verbose")
 
     app.Run(os.Args)
 }
