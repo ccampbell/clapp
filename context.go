@@ -38,6 +38,16 @@ func getMaxLength(m map[string]string) int {
     return maxLength
 }
 
+func findAlias(longFlag string, aliases map[string]string) string {
+    for k, v := range aliases {
+        if v == longFlag && len(k) == 2 {
+            return k
+        }
+    }
+
+    return ""
+}
+
 func (self *Context) PrintIntro() {
     if self.App.Intro != "" {
         self.Print(self.App.Intro)
@@ -58,6 +68,12 @@ func (self *Context) PrintUsage() {
 
     maxLength1 := getMaxLength(self.App.Commands)
     maxLength2 := getMaxLength(self.App.Flags) + 2
+
+    hasAliases := len(self.App.Aliases) > 0
+    if hasAliases {
+        maxLength2 += 4 // adds `-a, `
+    }
+
     maxLength := maxLength1
     if maxLength2 > maxLength1 {
         maxLength = maxLength2
@@ -71,7 +87,19 @@ func (self *Context) PrintUsage() {
     if len(self.App.FlagKeys) > 0 {
         self.Print("\n%s", boldUnderline("FLAGS"))
         for _, k := range self.App.FlagKeys {
-            flag := padRight("--" + k, " ", maxLength + 3)
+            flagString := "--" + k
+
+            a := findAlias(k, self.App.Aliases)
+            switch {
+                case a != "":
+                    flagString = a + ", " + flagString
+                    break
+                case hasAliases:
+                    flagString = "    " + flagString
+                    break
+            }
+
+            flag := padRight(flagString, " ", maxLength + 3)
             desc := self.App.Flags[k]
 
             if self.App.FlagDefaults[k] != "" {

@@ -21,13 +21,14 @@ type App struct {
     FlagKeys []string
     Flags map[string]string
     FlagDefaults map[string]string
+    Aliases map[string]string
 }
 
 func stripDashes(arg string) string {
     return strings.TrimLeft(arg, "-")
 }
 
-func ParseFlags(args []string) map[string]string {
+func ParseFlags(args []string, aliases map[string]string) map[string]string {
     var results map[string]string
     var last string
 
@@ -42,6 +43,10 @@ func ParseFlags(args []string) map[string]string {
         }
 
         if strings.HasPrefix(arg, "-") {
+            if val, ok := aliases[arg]; ok {
+                arg = val
+            }
+
             arg = stripDashes(arg)
             last = arg
             results[arg] = "1"
@@ -65,6 +70,7 @@ func New(n string) *App {
         Commands: make(map[string]string),
         Flags: make(map[string]string),
         FlagDefaults: make(map[string]string),
+        Aliases: make(map[string]string),
     }
     return app
 }
@@ -179,8 +185,20 @@ func (self *App) DefineFlag(flag...string) {
     }
 }
 
+// Adds a short flag as an alias for a larger flag
+//
+// For example:
+//
+// ```
+// app.DefineFlag("--verbose", "Show verbose output")
+// app.AddAlias("-v", "--verbose")
+// ```
+func (self *App) AddAlias(alias, flag string) {
+    self.Aliases[alias] = stripDashes(flag)
+}
+
 func (self *App) Run(args []string) {
-    f := ParseFlags(args)
+    f := ParseFlags(args, self.Aliases)
     p := ProgressBar {
         Width: 50,
         Duration: 500 * time.Millisecond,
