@@ -91,12 +91,27 @@ func handlerMatches(pattern string, args []string) (map[string]string, bool) {
 
     words := patternToWords(pattern)
     newArgs := make([]string, 0)
+    var wasFlag bool
     for i, arg := range args {
 
         // Do not include the first argument or any flags
-        if i > 0 && !strings.HasPrefix(arg, "-") {
-            newArgs = append(newArgs, arg)
+        if i == 0 {
+            continue
         }
+
+        // If the last item was a flag skip this one too
+        isFlag := strings.HasPrefix(arg, "-")
+        if wasFlag && !isFlag {
+            wasFlag = false
+            continue
+        }
+
+        if isFlag {
+            wasFlag = true
+            continue
+        }
+
+        newArgs = append(newArgs, arg)
     }
 
     if len(words) != len(newArgs) {
