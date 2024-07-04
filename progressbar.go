@@ -20,6 +20,7 @@ type ProgressBar struct {
     FillColor string
     BackgroundColor string
     doneChannel chan bool
+    renderingChannel chan bool
 }
 
 func (self *ProgressBar) GetLineForPercent(i int, displayPercent float64) string {
@@ -69,6 +70,7 @@ func easeOut(t float64, b float64, c float64, d float64) float64 {
 func (self *ProgressBar) Init(c *Context) {
     c.Mu.Lock()
     c.progressBarChannel = make(chan []string)
+    self.renderingChannel = make(chan bool, 1)
     c.Mu.Unlock()
     go func() {
         previousLine := ""
@@ -83,6 +85,7 @@ func (self *ProgressBar) Init(c *Context) {
                     for i, l := range lines {
                         if l == "CANCEL" {
                             c.Print("")
+                            <- self.renderingChannel
                             close(ch)
                             return
                         }
@@ -91,6 +94,7 @@ func (self *ProgressBar) Init(c *Context) {
                             c.Print("")
                             close(c.progressBarChannel)
                             self.doneChannel <- true
+                            <- self.renderingChannel
                             return
                         }
 
@@ -117,6 +121,7 @@ func (self *ProgressBar) Init(c *Context) {
 
                         time.Sleep(self.Duration / time.Duration(len(lines)))
                     }
+                    <- self.renderingChannel
                     break
             }
         }
@@ -124,6 +129,7 @@ func (self *ProgressBar) Init(c *Context) {
 }
 
 func (self *ProgressBar) Render(c *Context) {
+    self.renderingChannel <- true
     lines := self.GetLinesForPercentRange(self.PreviousPercent, self.CurrentPercent)
     c.progressBarChannel <- lines
     self.Mu.Lock()
