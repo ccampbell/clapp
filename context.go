@@ -248,9 +248,14 @@ func (self *Context) DeferFail(msg string) {
     runtime.Goexit()
 }
 
-func (self *Context) Fail(msg string) {
+func (self *Context) Fail(messages...interface{}) {
     error := ansi.ColorFunc("red+h")
-    self.PrintError("%s", error(msg))
+    if len(messages) >= 1 {
+        if str, ok := messages[0].(string); ok {
+            messages[0] = error(str)
+        }
+    }
+    self.PrintError(messages...)
     os.Exit(1)
 }
 
